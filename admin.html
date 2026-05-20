@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedReminder - Giao Diện Quản Trị</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html"><i class="fa-solid fa-capsules me-2 text-info"></i>MedReminder Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="adminNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link text-white-50" href="index.html"><i class="fa-solid fa-arrow-left me-1"></i>Xem trang khách</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-secondary text-white fw-bold" id="form-card-title">
+                        <i class="fa-solid fa-file-medical me-2"></i>Thêm Lịch Nhắc Mới
+                    </div>
+                    <div class="card-body">
+                        <form id="medication-form" novalidate>
+                            <input type="hidden" id="med-id"> <div class="mb-3">
+                                <label class="form-label fw-semibold">Tên thuốc *</label>
+                                <input type="text" id="med-name" class="form-control" placeholder="Ví dụ: Paracetamol">
+                                <div class="invalid-feedback" id="err-name">Vui lòng nhập tên thuốc.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Danh mục thuốc *</label>
+                                <select id="med-category" class="form-select">
+                                    <option value="">-- Chọn danh mục --</option>
+                                    <option value="Kháng sinh">Kháng sinh</option>
+                                    <option value="Vitamin">Vitamin / Thực phẩm chức năng</option>
+                                    <option value="Tim mạch">Tim mạch</option>
+                                    <option value="Giảm đau">Giảm đau / Hạ sốt</option>
+                                </select>
+                                <div class="invalid-feedback" id="err-category">Vui lòng chọn danh mục.</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label fw-semibold">Liều lượng *</label>
+                                    <input type="text" id="med-dosage" class="form-control" placeholder="1 viên, 5ml...">
+                                    <div class="invalid-feedback" id="err-dosage">Nhập liều lượng.</div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label fw-semibold">Giờ uống *</label>
+                                    <input type="time" id="med-time" class="form-control">
+                                    <div class="invalid-feedback" id="err-time">Chọn giờ nhắc.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Đường dẫn ảnh sản phẩm (URL) *</label>
+                                <input type="url" id="med-image" class="form-control" placeholder="https://example.com/image.jpg">
+                                <div class="invalid-feedback" id="err-image">Đường dẫn ảnh không hợp lệ (Bắt đầu bằng http/https).</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Ghi chú bác sĩ</label>
+                                <textarea id="med-note" class="form-control" rows="2" placeholder="Uống sau bữa ăn no..."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" id="btn-submit-form" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i>Lưu lịch nhắc</button>
+                                <button type="button" id="btn-cancel-edit" class="btn btn-light border d-none">Hủy chỉnh sửa</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm p-3">
+                    <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-list-check me-2 text-primary"></i>Danh sách thuốc hệ thống</h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ảnh</th>
+                                    <th>Tên thuốc</th>
+                                    <th>Danh mục</th>
+                                    <th>Liều dùng</th>
+                                    <th>Giờ nhắc</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-med-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+
+                    <nav class="mt-3">
+                        <ul class="pagination justify-content-center" id="pagination">
+                            </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <i class="fa-solid fa-triangle-exclamation text-danger fs-1 mb-3"></i>
+                    <h5>Xác nhận xóa thuốc?</h5>
+                    <p class="text-muted small">Hành động này không thể hoàn tác.</p>
+                    <div class="d-flex justify-content-center gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                        <button type="button" id="btn-confirm-delete-execute" class="btn btn-danger btn-sm">Chắc chắn xóa</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="adminToast" class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="admin-toast-message">Thành công!</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
