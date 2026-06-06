@@ -1,159 +1,83 @@
-/* Hiệu ứng hover cho thẻ card thuốc ở trang public */
-.med-card {
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    border: 1px solid rgba(0,0,0,0.08);
-}
-.med-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+/* css/style.css */
+
+:root {
+    --teal-color: #0d9488;
+    --teal-hover: #0f766e;
+    --soft-cyan: #ecfeff;
+    --dark-blue: #1e293b;
 }
 
-/* Kiểu hiển thị thuốc đã uống */
-.card-taken {
-    background-color: #e8f5e9 !important;
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.bg-teal {
+    background-color: var(--teal-color) !important;
+}
+
+.text-teal {
+    color: var(--teal-color) !important;
+}
+
+.btn-teal {
+    background-color: var(--teal-color);
+    color: white;
+}
+.btn-teal:hover {
+    background-color: var(--teal-hover);
+    color: white;
+}
+
+.bg-soft-cyan {
+    background-color: var(--soft-cyan);
+}
+
+.text-dark-blue {
+    color: var(--dark-blue);
+}
+
+/* Kiểu dáng linh hoạt cho thẻ card khi click toggle trạng thái */
+.card-med {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+}
+
+.card-med:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 20px rgba(13, 148, 136, 0.15) !important;
+}
+
+/* Thẻ chưa uống thuốc (Chế độ chờ) */
+.med-pending {
+    border-left: 5px solid #f59e0b !important;
+    background-color: #ffffff;
+}
+
+/* Thẻ đã uống thuốc (Xanh lá hoàn thành) */
+.med-taken {
+    border-left: 5px solid #10b981 !important;
+    background-color: #f0fdf4;
     opacity: 0.85;
 }
-.card-taken .med-title {
+
+.med-taken .card-title {
     text-decoration: line-through;
-    color: #2e7d32;
+    color: #64748b !important;
 }
 
-/* Căn chỉnh ảnh chuẩn kích thước cho card */
-.med-img-container {
-    height: 160px;
-    overflow: hidden;
-    background-color: #f8f9fa;
-}
-.med-img-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-/* ==========================================
-   1. ĐỊNH DẠNG CHUNG
-   ========================================== */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #333333;
-    background-color: #f4f6f9; /* Giữ nền xám sáng, làm nổi bật các khối Card trắng */
+.small-note {
+    background: #f1f5f9;
+    padding: 6px 10px;
+    border-radius: 6px;
 }
 
-a {
-    text-decoration: none;
-}
-
-/* ==========================================
-   2. THANH ĐIỀU HƯỚNG (NAVBAR ADMIN)
-   ========================================== */
-.navbar {
-    border-bottom: 3px solid #0dcaf0; /* Đường viền mỏng màu cyan tạo điểm nhấn */
-}
-
-.navbar-brand i {
-    display: inline-block;
-    animation: pulseIcon 2s infinite;
-}
-
-/* ==========================================
-   3. CẤU TRÚC CARD FORM & Ô NHẬP LIỆU
-   ========================================== */
-/* Bỏ !important ở card để không chặn các class background từ Bootstrap */
-.card {
-    border-radius: 12px;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
-}
-
-/* Tinh chỉnh các ô input, select, textarea mượt mà hơn */
-.form-control, .form-select {
-    border-radius: 8px;
-    padding: 0.6rem 0.75rem;
-    transition: border-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: #86b7fe;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.18);
-}
-
-/* ==========================================
-   4. NÚT BẤM (GIỮ NGUYÊN MÀU SẮC BOOTSTRAP / JQUERY)
-   ========================================== */
-/* TUYỆT ĐỐI KHÔNG dùng !important cho background hay border ở đây */
-.btn {
-    border-radius: 8px;
-    font-weight: 500;
-    transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* Hiệu ứng hover đa dụng cho mọi loại nút (Xanh, Đỏ, Vàng) mà không lo mất màu */
-.btn:hover {
-    transform: translateY(-1px);
-    filter: brightness(0.92); /* Làm đậm màu nền hiện tại lên một chút khi hover */
-}
-
-.btn:active {
-    transform: translateY(1px);
-}
-
-/* ==========================================
-   5. BẢNG DANH SÁCH THUỐC (TABLE)
-   ========================================== */
+/* Bo tròn bảng biểu */
 .table-responsive {
     border-radius: 8px;
-    border: 1px solid #dee2e6;
-    overflow: hidden; /* Giúp bo góc của bảng không bị lòi góc nhọn */
 }
 
-/* Căn giữa chữ và ảnh theo chiều dọc trong các ô của bảng */
-.table tbody td, .table thead th {
-    vertical-align: middle;
+.toast-container {
+    z-index: 1100;
 }
-
-/* Định dạng tiêu đề cột cho bảng admin */
-.table thead th {
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-
-/* Xử lý ảnh đại diện thuốc tải từ API */
-.table tbody td img {
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    border: 1px solid #dee2e6;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.table tbody td img:hover {
-    transform: scale(1.25); /* Phóng to ảnh mượt mà khi di chuột vào */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-/* Highlight hàng khi di chuột qua */
-.table-hover tbody tr:hover {
-    background-color: rgba(13, 110, 253, 0.04) !important;
-}
-
-/* Định dạng các nút nhỏ Sửa / Xóa trong bảng */
-.table .btn-sm {
-    border-radius: 6px;
-}
-
-/* Nút phân trang */
-.pagination .page-item .page-link {
-    border-radius: 6px;
-    margin: 0 2px;
-}
-
-/* ==========================================
-   6. ANIMATIONS (HIỆU ỨNG CHUYỂN ĐỘNG)
-   ========================================== */
-@keyframes pulseIcon {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.08); }
-    100% { transform: scale(1); }
-}
+.bg-light-success { background-color: #e8f5e9 !important; }
+.bg-light-warning { background-color: #fffde7 !important; }

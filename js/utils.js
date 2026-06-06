@@ -1,59 +1,41 @@
+// js/utils.js
+
 const Utils = {
-    // Hàm hiển thị thông báo Toast nhanh chóng
-    showToast: (toastId, messageId, message, isSuccess = true) => {
-        const toastEl = document.getElementById(toastId);
-        document.getElementById(messageId).innerText = message;
-        if(isSuccess) {
-            toastEl.classList.remove('bg-danger');
-            toastEl.classList.add('bg-success');
-        } else {
-            toastEl.classList.remove('bg-success');
-            toastEl.classList.add('bg-danger');
-        }
-        const bsToast = new bootstrap.Toast(toastEl);
-        bsToast.show();
+    // Validate Form Thêm/Sửa Thuốc (Medication)
+    validateMedicationForm: (data) => {
+        let errors = {};
+        if (!data.name || data.name.trim() === "") errors.name = "Tên thuốc không được để trống.";
+        if (!data.dosage || data.dosage.trim() === "") errors.dosage = "Liều dùng không được để trống (Ví dụ: 1 viên, 5ml).";
+        if (!data.doctor || data.doctor.trim() === "") errors.doctor = "Tên bác sĩ kê đơn không được để trống.";
+        return errors;
     },
 
-    // Form Validation (Dùng Javascript Thuần để kiểm tra dữ liệu đầu vào)
-    validateMedicationForm: () => {
-        let isValid = true;
+    // Hiển thị thông báo lỗi ngay dưới ô nhập liệu (Inline Error)
+    showInlineErrors: (errors, formElement) => {
+        $(formElement).find('.invalid-feedback').remove();
+        $(formElement).find('.is-invalid').removeClass('is-invalid');
 
-        const name = document.getElementById('med-name');
-        const category = document.getElementById('med-category');
-        const dosage = document.getElementById('med-dosage');
-        const time = document.getElementById('med-time');
-        const image = document.getElementById('med-image');
+        Object.keys(errors).forEach(key => {
+            const input = $(formElement).find(`[name="${key}"]`);
+            input.addClass('is-invalid');
+            input.after(`<div class="invalid-feedback">${errors[key]}</div>`);
+        });
+    },
 
-        // Reset trạng thái lỗi cũ trước khi check mới
-        [name, category, dosage, time, image].forEach(el => el.classList.remove('is-invalid'));
-
-        // Kiểm tra Tên thuốc không rỗng
-        if (!name.value.trim()) {
-            name.classList.add('is-invalid');
-            isValid = false;
-        }
-        // Kiểm tra Danh mục thuốc
-        if (!category.value) {
-            category.classList.add('is-invalid');
-            isValid = false;
-        }
-        // Kiểm tra Liều lượng không rỗng
-        if (!dosage.value.trim()) {
-            dosage.classList.add('is-invalid');
-            isValid = false;
-        }
-        // Kiểm tra Giờ uống thuốc
-        if (!time.value) {
-            time.classList.add('is-invalid');
-            isValid = false;
-        }
-        // Kiểm tra URL ảnh bằng Regular Expression cơ bản (Bắt buộc bắt đầu bằng http:// hoặc https://)
-        const urlPattern = /^(http|https):\/\/[^ "]+$/;
-        if (!image.value.trim() || !urlPattern.test(image.value.trim())) {
-            image.classList.add('is-invalid');
-            isValid = false;
-        }
-
-        return isValid;
+    // Thông báo Toast góc màn hình (Bootstrap 5)
+    showToast: (message, type = 'success') => {
+        const toastId = 'toast-' + Date.now();
+        const bgClass = type === 'success' ? 'bg-teal text-white' : 'bg-danger text-white';
+        const toastHTML = `
+            <div id="${toastId}" class="toast align-items-center ${bgClass} border-0 m-3 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body fw-bold">💊 ${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>`;
+        $('.toast-container').append(toastHTML);
+        const toastElement = new bootstrap.Toast(document.getElementById(toastId), { delay: 3000 });
+        toastElement.show();
+        $(`#${toastId}`).on('hidden.bs.toast', function () { $(this).remove(); });
     }
 };

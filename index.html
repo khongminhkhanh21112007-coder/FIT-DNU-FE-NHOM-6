@@ -3,105 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedReminder - Lịch Uống Thuốc Hôm Nay</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <title>MedReminder - Lịch Nhắc Uống Thuốc</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-light">
+<body class="bg-soft-cyan">
 
-    <!-- Navbar Component -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-teal shadow">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html"><i class="fa-solid fa-capsules me-2"></i>MedReminder</a>
-            <button class="navbar-expand navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="index.html">Hôm nay</a></li>
-                    <li class="nav-item"><a class="nav-link" href="admin.html"><i class="fa-solid fa-gear me-1"></i>Quản trị (Admin)</a></li>
-                </ul>
-            </div>
+            <a class="navbar-brand fw-bold fs-4" href="index.html">💊 MedReminder</a>
+            <a href="admin.html" class="btn btn-light text-teal fw-bold shadow-sm">⚙️ Trang Quản Trị</a>
         </div>
     </nav>
 
-    <!-- Bộ lọc & Tìm kiếm -->
-    <div class="container mb-4">
-        <div class="row g-3 bg-white p-3 rounded shadow-sm">
-            <div class="col-md-6">
-                <div class="input-group">
-                    <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                    <input type="text" id="search-input" class="form-control border-start-0" placeholder="Tìm kiếm tên thuốc...">
+    <div class="container my-5">
+        <div class="card p-4 border-0 shadow-sm mb-4">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold text-secondary">Chọn Ngày Xem Lịch:</label>
+                    <input type="date" id="filterDate" class="form-control">
                 </div>
-            </div>
-            <div class="col-md-6">
-                <select id="category-filter" class="form-select">
-                    <option value="">Tất cả danh mục thuốc</option>
-                    <option value="Kháng sinh">Kháng sinh</option>
-                    <option value="Vitamin">Vitamin / Thực phẩm chức năng</option>
-                    <option value="Tim mạch">Tim mạch</option>
-                    <option value="Giảm đau">Giảm đau / Hạ sốt</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
-    <!-- Danh sách lịch nhắc uống thuốc -->
-    <div class="container">
-        <h3 class="mb-3 fw-bold text-secondary"><i class="fa-solid fa-clock me-2 text-warning"></i>Lịch uống thuốc hôm nay</h3>
-        
-        <!-- Hiệu ứng Loading Spinner -->
-        <div id="loading-spinner" class="text-center my-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2 text-muted">Đang tải lịch nhắc thuốc...</p>
-        </div>
-
-        <!-- Vùng hiển thị danh sách Card -->
-        <div id="medication-list" class="row g-4"></div>
-    </div>
-
-    <!-- Modal Chi Tiết Thuốc -->
-    <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold" id="modal-med-name">Tên thuốc</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="col-md-5">
+                    <label class="form-label fw-bold text-secondary">Tìm Tên Bệnh Nhân:</label>
+                    <input type="text" id="searchPatient" class="form-control" placeholder="Nhập tên cần tìm...">
                 </div>
-                <div class="modal-body text-center">
-                    <img id="modal-med-image" src="" alt="" class="img-fluid rounded mb-3 shadow-sm" style="max-height: 200px; object-fit: cover;">
-                    <div class="text-start p-2">
-                        <p><strong><i class="fa-solid fa-tags text-primary me-2"></i>Danh mục:</strong> <span id="modal-med-category"></span></p>
-                        <p><strong><i class="fa-solid fa-spoon text-primary me-2"></i>Liều lượng:</strong> <span id="modal-med-dosage"></span></p>
-                        <p><strong><i class="fa-solid fa-hourglass-half text-primary me-2"></i>Giờ nhắc:</strong> <span class="badge bg-warning text-dark fs-6" id="modal-med-time"></span></p>
-                        <p><strong><i class="fa-solid fa-comment-medical text-primary me-2"></i>Ghi chú bác sĩ:</strong></p>
-                        <div class="p-2 bg-light rounded text-muted italic" id="modal-med-note"></div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn class-btn btn-secondary" data-bs-dismiss="dark" data-bs-content="" data-bs-dismiss="modal">Đóng</button>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold text-secondary">Trạng Thái:</label>
+                    <select id="filterStatus" class="form-select">
+                        <option value="all">Tất cả trạng thái</option>
+                        <option value="taken">Đã uống thuốc</option>
+                        <option value="pending">Chưa uống thuốc</option>
+                    </select>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Toast Thông Báo Kết Quả -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="liveToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body" id="toast-message">Cập nhật thành công!</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
+        <h3 class="fw-bold mb-4 text-dark-blue" id="scheduleTitle">📅 Danh Sách Nhắc Nhở Hôm Nay</h3>
+
+        <div id="loading" class="text-center my-5">
+            <div class="spinner-border text-teal" role="status" style="width: 3rem; height: 3rem;"></div>
+            <p class="mt-2 text-muted fw-semibold">Đang đồng bộ lịch trình y tế...</p>
         </div>
+
+        <div class="row row-cols-1 row-cols-md-3 g-4" id="scheduleList" style="display: none;"></div>
     </div>
 
-    <!-- Thư viện bắt buộc: jQuery, Bootstrap Bundle -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Scripts ứng dụng -->
     <script src="js/api.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/main.js"></script>
