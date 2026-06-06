@@ -25,22 +25,21 @@ Hệ thống ứng dụng web quản lý danh mục thuốc, danh sách bệnh n
 * **Front-End:** HTML5, CSS3, JavaScript (ES6)
 * **Framework giao diện:** Bootstrap 5 (Giao diện Responsive, hiển thị mượt mà trên cả máy tính lẫn điện thoại)
 * **Thư viện tương tác:** jQuery (Xử lý DOM, đồng bộ API, bắt sự kiện bất đồng bộ)
-* **Back-End / Cơ sở dữ liệu:** MockAPI (RESTful API chia làm 2 server độc lập để tránh nghẽn luồng dữ liệu)
+* **Back-End / Cơ sở dữ liệu:** MockAPI (RESTful API kết nối cơ sở dữ liệu)
 
 ---
 
 ## 📁 Cấu Trúc Thư Mục Dự Án
 
 ```text
-📁 med-reminder/
-│
-├── 📄 index.html          # Giao diện trang chủ hiển thị lịch nhắc nhở hôm nay
-├── 📄 admin.html          # Giao diện trang quản trị (Thuốc, Bệnh nhân, Tạo lịch)
-│
-├── 📁 css/
-│   └── 📄 style.css       # Định dạng màu sắc, giao diện các thẻ card và hiệu ứng
-│
-└── 📁 js/
-    ├── 📄 api.js          # Cấu hình gọi fetch API kết nối đến server MockAPI
-    ├── 📄 main.js         # Logic điều khiển, render dữ liệu và bộ lọc tại index.html
-    └── 📄 admin.js        # Logic quản lý thêm/sửa/xóa thuốc, bệnh nhân tại admin.html
+FIT-DNU-FE-NHOM-6/
+├── CSS/
+│   └── style.css          # File chứa toàn bộ mã nguồn CSS tùy chỉnh giao diện
+├── js/
+│   ├── api.js             # Cấu hình gọi API (Fetch/Axios) kết nối cơ sở dữ liệu
+│   ├── utils.js           # Các hàm tiện ích bổ trợ (Validation, định dạng dữ liệu)
+│   ├── main.js            # Xử lý logic giao diện người dùng (index.html)
+│   └── admin.js           # Xử lý logic nghiệp vụ Form/Table (admin.html)
+├── admin.html             # Giao diện trang quản trị viên (Thêm, Sửa, Xóa thuốc)
+├── index.html             # Giao diện trang chủ hiển thị lịch nhắc cho khách hàng
+└── README.md              # Tài liệu hướng dẫn sử dụng dự án
