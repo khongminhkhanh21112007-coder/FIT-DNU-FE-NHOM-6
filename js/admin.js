@@ -4,24 +4,47 @@ $(document).ready(function () {
     const medModal = new bootstrap.Modal(document.getElementById('medicationModal'));
     let isEditMode = false;
 
+    // Khai báo các biến lưu trữ toàn cục trong file để các hàm đều dùng chung được
+    let medications = [];
+    let patients = [];
+    let schedules = [];
+
     // Định nghĩa thêm hàm xóa bệnh nhân vào API (phòng trường hợp api.js của bạn thiếu)
     if (!API.deletePatient) {
         API.deletePatient = (id) => fetch(`${API_BASE_1}/patients/${id}`, { method: 'DELETE' }).then(res => res.json());
     }
 
+    // Định nghĩa thêm hàm xóa lịch nhắc vào API (phòng trường hợp api.js của bạn thiếu)
+    if (!API.deleteSchedule) {
+        API.deleteSchedule = (id) => fetch(`${API_BASE_1}/schedules/${id}`, { method: 'DELETE' }).then(res => res.json());
+    }
+
     async function loadAdminData() {
         $('#medicationTableBody').html('<tr><td colspan="5" class="text-center py-2">Đang tải...</td></tr>');
         $('#patientTableBody').html('<tr><td colspan="4" class="text-center py-2">Đang tải...</td></tr>');
+        $('#historyLogTableBody').html('<tr><td colspan="8" class="text-center py-2">Đang tải lịch sử...</td></tr>');
+        
         try {
-            const [medications, patients] = await Promise.all([
+            // TẢI ĐỒNG THỜI CẢ 3 NGUỒN DỮ LIỆU bao gồm cả lịch nhắc uống thuốc (Schedules)
+            const [medData, patientData, scheduleData] = await Promise.all([
                 API.getMedications(),
-                API.getPatients()
+                API.getPatients(),
+                API.getSchedules()
             ]);
 
+            // Gán dữ liệu nhận được vào các biến toàn cục bên trên
+            medications = medData || [];
+            patients = patientData || [];
+            schedules = scheduleData || [];
+
+            // Thực hiện render giao diện cho các bảng dữ liệu tương ứng
             renderMedicationTable(medications);
             renderPatientTable(patients);
             populateDropdowns(medications, patients);
+            renderHistoryLog(); // <--- KÍCH HOẠT VẼ BẢNG LỊCH SỬ KHI TẢI XONG DATA
+            
         } catch (e) {
+            console.error("Lỗi đồng bộ:", e);
             Utils.showToast("Lỗi đồng bộ dữ liệu MockAPI.", "danger");
         }
     }
@@ -68,64 +91,43 @@ $(document).ready(function () {
                 </tr>`);
         });
     }
-    // Dán đoạn code này vào bên trong để xử lý nút bấm:
-    // Tìm đến đúng đoạn này trong file js/admin.js của bạn và thay thế toàn bộ cụm sự kiện này:
-$('#btnOpenAddPatient').on('click', async function () {
-    const nameInput = prompt("Nhập họ và tên bệnh nhân mới:");
-    if (nameInput === null) return; 
-    
-    const nameCleaned = nameInput.trim();
-    if (!nameCleaned) {
-        alert("Tên bệnh nhân không được bỏ trống!");
-        return;
-    }
 
-    const diseaseInput = prompt(`Nhập bệnh lý / chẩn đoán cho bệnh nhân "${nameCleaned}":`);
-    if (diseaseInput === null) return;
-    const diseaseCleaned = diseaseInput.trim() || "Chưa rõ";
-
-    const newPatient = {
-        name: nameCleaned,
-        disease: diseaseCleaned,
-        gender: "N/A",
-        phone: "N/A",
-        address: "N/A",
-        createdAt: new Date().toISOString()
-    };
-
-    try {
-        // 1. Gửi dữ liệu lên MockAPI để lưu trữ lâu dài
-        const created = await API.createPatient(newPatient);
+    // Sự kiện Thêm Bệnh nhân mới bằng Prompt nhanh
+    $('#btnOpenAddPatient').on('click', async function () {
+        const nameInput = prompt("Nhập họ và tên bệnh nhân mới:");
+        if (nameInput === null) return; 
         
-        if (created) {
-            // 2. Thêm trực tiếp người vừa tạo vào mảng dữ liệu hiện tại trong bộ nhớ
-            if (typeof patients !== 'undefined' && Array.isArray(patients)) {
-                patients.push(created);
-            }
-            
-            // 3. Gọi hàm hiển thị lại bảng bệnh nhân ngay lập tức mà không cần reload trang
-            if (typeof renderPatients === "function") {
-                renderPatients();
-            } else if (typeof renderPatientTable === "function") {
-                renderPatientTable(patients);
-            } else {
-                // Phương án dự phòng nếu hàm render của bạn tên khác
-                location.reload(); 
-                return;
-            }
-
-            // 4. Đồng bộ lại danh sách lựa chọn (Select/Option) ở ô tạo lịch nhắc uống thuốc
-            if (typeof updateSelectOptions === "function") {
-                updateSelectOptions();
-            }
-
-            alert(`Đã thêm thành công bệnh nhân: ${nameCleaned}`);
+        const nameCleaned = nameInput.trim();
+        if (!nameCleaned) {
+            alert("Tên bệnh nhân không được bỏ trống!");
+            return;
         }
-    } catch (err) {
-        console.error("Lỗi API:", err);
-        alert("Lỗi không thể lưu bệnh nhân lên MockAPI. Bạn hãy thử kiểm tra lại kết nối mạng.");
-    }
-});
+
+        const diseaseInput = prompt(`Nhập bệnh lý / chẩn đoán cho bệnh nhân "${nameCleaned}":`);
+        if (diseaseInput === null) return;
+        const diseaseCleaned = diseaseInput.trim() || "Chưa rõ";
+
+        const newPatient = {
+            name: nameCleaned,
+            disease: diseaseCleaned,
+            gender: "N/A",
+            phone: "N/A",
+            address: "N/A",
+            createdAt: new Date().toISOString()
+        };
+
+        try {
+            const created = await API.createPatient(newPatient);
+            if (created) {
+                Utils.showToast(`Đã thêm thành công bệnh nhân: ${nameCleaned}`);
+                loadAdminData(); // Tải lại toàn bộ để đồng bộ danh sách và cả ô Dropdown chọn bệnh nhân
+            }
+        } catch (err) {
+            console.error("Lỗi API:", err);
+            alert("Lỗi không thể lưu bệnh nhân lên MockAPI.");
+        }
+    });
+
     function populateDropdowns(meds, patientsList) {
         const selectMed = $('#selectMedication').empty();
         const selectPat = $('#selectPatient').empty();
@@ -148,6 +150,122 @@ $('#btnOpenAddPatient').on('click', async function () {
             selectMed.append('<option value="">-- Không có thuốc --</option>');
         }
     }
+
+    // Hàm hiển thị Lịch sử uống thuốc (Log Lịch trình xuống bảng dưới cùng)
+    function renderHistoryLog() {
+        const tbody = $('#historyLogTableBody').empty();
+
+        // Nếu mảng rỗng hoặc chưa load được, thông báo trống
+        if (!schedules || schedules.length === 0) {
+            tbody.html('<tr><td colspan="8" class="text-muted py-4">Chưa có lịch sử ghi nhận nào trên hệ thống.</td></tr>');
+            return;
+        }
+
+        // Sắp xếp lịch sử uống thuốc theo ngày và giờ mới nhất lên đầu để dễ theo dõi
+        const sortedSchedules = [...schedules].sort((a, b) => {
+            const dateA = new Date(`${a.date}T${a.time}`);
+            const dateB = new Date(`${b.date}T${b.time}`);
+            return dateB - dateA;
+        });
+
+        sortedSchedules.forEach(item => {
+            // Khớp ID bệnh nhân một cách an toàn
+            const patient = patients.find(p => {
+                const pId = p.id || p._id || "";
+                const itemPtId = item.patientId || "";
+                return pId.toString().trim() === itemPtId.toString().trim();
+            }) || { name: "Bệnh nhân ẩn danh" };
+
+            // Khớp ID tên thuốc một cách an toàn
+            const med = medications.find(m => {
+                const mId = m.id || m._id || "";
+                const itemMedId = item.medicationId || "";
+                return mId.toString().trim() === itemMedId.toString().trim();
+            }) || { name: "Thuốc chưa rõ", dosage: "Theo đơn" };
+
+            // Chuẩn hóa ngày thành định dạng DD/MM/YYYY của Việt Nam
+            let displayDate = item.date;
+            if (item.date && item.date.includes('-')) {
+                displayDate = item.date.split('-').reverse().join('/');
+            }
+
+            // Lấy ID an toàn của hàng lịch trình
+            const safeScheduleId = item.id || item._id;
+
+            // Thiết kế thẻ trạng thái hỗ trợ bấm chuyển đổi tương tác (Thêm class, data, style cursor)
+            const statusBadge = item.taken 
+                ? `<span class="badge bg-success px-3 py-2 btn-toggle-status-admin" data-id="${safeScheduleId}" data-taken="true" style="font-size: 0.85rem; border-radius: 20px; cursor: pointer;" title="Bấm để đổi thành Chưa uống">✓ Đã uống</span>` 
+                : `<span class="badge bg-warning text-dark px-3 py-2 btn-toggle-status-admin" data-id="${safeScheduleId}" data-taken="false" style="font-size: 0.85rem; border-radius: 20px; cursor: pointer;" title="Bấm để đổi thành Đã uống">⏳ Chưa uống</span>`;
+
+            // Thêm cột dấu ❌ vào cuối dòng để thực hiện tính năng xóa lịch nhắc
+            tbody.append(`
+                <tr>
+                    <td class="fw-bold text-secondary">${displayDate}</td>
+                    <td class="fw-bold text-dark">⏰ ${item.time}</td>
+                    <td class="fw-bold text-primary text-start ps-4">👤 ${patient.name}</td>
+                    <td class="text-start ps-3 fw-semibold">💊 ${med.name}</td>
+                    <td><span class="badge bg-light text-dark border">${med.dosage}</span></td>
+                    <td class="text-muted text-start"><i>${item.note || '-'}</i></td>
+                    <td>${statusBadge}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-link text-danger p-0 btn-delete-schedule" data-id="${safeScheduleId}" style="font-size: 1.05rem; text-decoration: none;" title="Xóa lịch nhắc này">
+                            ❌
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+
+    // Sự kiện Click đảo trạng thái uống thuốc trực tiếp trên bảng Admin
+    $(document).on('click', '.btn-toggle-status-admin', async function () {
+        const badge = $(this);
+        const id = badge.data('id');
+        const currentTaken = badge.data('taken') === true;
+        const newTakenStatus = !currentTaken; // Đảo trạng thái
+
+        try {
+            // 1. Gửi lệnh cập nhật trạng thái mới lên server
+            const updated = await API.updateSchedule(id, { taken: newTakenStatus });
+            
+            if (updated) {
+                // 2. Tìm và cập nhật lại trạng thái ngay trong mảng bộ nhớ cục bộ
+                const targetIndex = schedules.findIndex(s => (s.id || s._id).toString() === id.toString());
+                if (targetIndex !== -1) {
+                    schedules[targetIndex].taken = newTakenStatus;
+                }
+
+                // 3. Render lại bảng lịch sử để cập nhật màu sắc huy hiệu lập tức
+                renderHistoryLog();
+                Utils.showToast("Đã cập nhật trạng thái uống thuốc!");
+            }
+        } catch (err) {
+            console.error("Lỗi khi đổi trạng thái:", err);
+            Utils.showToast("Không thể cập nhật trạng thái.", "danger");
+        }
+    });
+
+    // Sự kiện Bấm nút ❌ để xóa lịch nhắc uống thuốc
+    $(document).on('click', '.btn-delete-schedule', async function () {
+        const id = $(this).data('id');
+        
+        if (confirm("Bạn có chắc chắn muốn xóa lịch nhắc uống thuốc này không?\nDữ liệu tương ứng trên trang chủ cũng sẽ mất theo.")) {
+            try {
+                // 1. Gửi lệnh xóa lên MockAPI server
+                await API.deleteSchedule(id);
+                
+                // 2. Lọc bỏ phần tử vừa xóa ra khỏi mảng cục bộ
+                schedules = schedules.filter(s => (s.id || s._id).toString() !== id.toString());
+                
+                // 3. Vẽ lại bảng dữ liệu lập tức mà không cần load lại trang web
+                renderHistoryLog();
+                Utils.showToast("Đã xóa lịch nhắc thành công!");
+            } catch (err) {
+                console.error("Lỗi khi xóa lịch nhắc:", err);
+                Utils.showToast("Không thể xóa lịch nhắc thuốc.", "danger");
+            }
+        }
+    });
 
     // Sự kiện Xóa Bệnh Nhân
     $(document).on('click', '.btn-delete-patient', async function () {
@@ -223,21 +341,28 @@ $('#btnOpenAddPatient').on('click', async function () {
         }
     });
 
-    // Tạo lịch nhắc nhở (Đồng bộ ép chuỗi String cho ID)
+    // Tạo lịch nhắc nhở 
     $('#scheduleForm').submit(async function (e) {
         e.preventDefault();
         const arr = $(this).serializeArray();
         let scheduleData = { taken: false };
-        arr.forEach(f => scheduleData[f.name] = String(f.value)); // Ép id về chuỗi text đồng bộ
+        arr.forEach(f => scheduleData[f.name] = String(f.value));
 
         try {
-            await API.createSchedule(scheduleData);
-            Utils.showToast("Tạo lịch nhắc nhở thành công!");
-            $('#scheduleForm')[0].reset();
+            const created = await API.createSchedule(scheduleData);
+            if (created) {
+                Utils.showToast("Tạo lịch nhắc nhở thành công!");
+                $('#scheduleForm')[0].reset();
+                
+                // Đẩy trực tiếp bản ghi mới vào mảng để bảng tự động tăng dòng tức thì
+                schedules.push(created);
+                renderHistoryLog(); // Vẽ lại lịch sử ngay không cần tải lại toàn bộ trang
+            }
         } catch (err) {
             Utils.showToast("Lỗi khi tạo lịch nhắc.", "danger");
         }
     });
 
+    // CHẠY LẦN ĐẦU TIÊN KHI MỞ TRANG
     loadAdminData();
 });
